@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     private float moveSpeed;
 
     [Tooltip("The smoothness of player rotation, keep low")]
-    [SerializeField]
+    [SerializeField] [Range (0f, 1f)]
     private float smoothRotationTime = 0.1f;
 
     [Tooltip("The force of player jump")]
@@ -44,8 +44,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] 
     private float cameraTargetDivider;
 
-    private NewInputSystemScript playerInputScript;
-
+    private NewInputSystemScript playerInputScript; 
     private Vector3 moveDirection = Vector3.zero;
     private Vector3 verticalVelocity = Vector3.zero;
     private CharacterController controller;
@@ -139,7 +138,7 @@ public class PlayerController : MonoBehaviour
 
         if (grounded && verticalVelocity.y < 0f)
         {
-            verticalVelocity.y = -2f;
+            verticalVelocity.y = -10f;
             jumpsAvailable = originalNumberOfJumpsAvailable;
         }
         else
