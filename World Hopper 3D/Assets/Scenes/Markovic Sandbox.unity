@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -927,11 +927,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7163361779044676505, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.000000018988336
+      value: 0.00000001898834
       objectReference: {fileID: 0}
     - target: {fileID: 7163361779044676505, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.0000000030850345
+      value: -0.000000003085035
       objectReference: {fileID: 0}
     - target: {fileID: 7163361779296706684, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_RootOrder
@@ -980,6 +980,38 @@ PrefabInstance:
     - target: {fileID: 7163361779296706687, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779420211022, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.17824744
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779420211022, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779420211022, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779890448845, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: m_XAxis.m_InvertInput
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779890448845, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: m_YAxis.m_InvertInput
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779890448846, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361780074756752, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361780074756752, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
