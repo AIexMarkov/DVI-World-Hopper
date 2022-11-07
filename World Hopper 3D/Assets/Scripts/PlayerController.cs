@@ -8,30 +8,56 @@ public class PlayerController : MonoBehaviour
     //Variables
     [Header("Player Movement")]
     [Tooltip("The speed the player moves")]
-    public float moveSpeed;
+    [SerializeField]
+    private float moveSpeed;
+
+    [Tooltip("The smoothness of player rotation, keep low")]
+    [SerializeField] [Range (0f, 1f)]
+    private float smoothRotationTime = 0.1f;
 
     [Tooltip("The force of player jump")]
-    public float jumpForce;
-
-    [Tooltip("Force Mode the player will use for movement")]
-    public ForceMode playerForceMode;
-
-    [Header("Other Components")]
-    [Tooltip("The new Input System Script")]
-    public NewInputSystemScript playerInputScript;
-
-    enum GroundLayer { Default, TransparentFX, IgnoreRaycast, NotGround, Water, UI}
-    [Tooltip("What does the player consider as ground")]
     [SerializeField]
-    private GroundLayer groundLayer;
+    private float jumpForce;
 
-    private Vector2 moveDirection = Vector2.zero;
-    private Rigidbody rb;
+    [Tooltip("The player uses it's own, independent gravity, and doesn't interact with Rigidbodies")]
+    [SerializeField]
+    private float gravity;
 
-    bool grounded = true;
+    [Tooltip("The amount of jumps the player has")]
+    [Range (1, 5)]
+    public int jumpsAvailable = 2;
+
+    [Tooltip("The Feet position, relevant for ground checks and jumping")]
+    [SerializeField]
+    private Transform feet;
+
+    [Tooltip("How Far Do The Legs check for ground")]
+    [SerializeField]
+    private float groundCheckRadius = 0.4f;
+
+    [Tooltip("What Layer does the player consider to be ground")]
+    [SerializeField]
+    private LayerMask groundLayer;
+
+    [Tooltip("Related to the camera aim")]
+    [Range(2, 100)] 
+    [SerializeField] 
+    private float cameraTargetDivider;
+
+    private NewInputSystemScript playerInputScript; 
+    private Vector3 moveDirection = Vector3.zero;
+    private Vector3 verticalVelocity = Vector3.zero;
+    private CharacterController controller;
+    private Transform mainCameraTransform;
+    private Transform cameraAimAt;
+    private Camera mainCamera;
+    private float turnSmoothVelocity;
+    private int originalNumberOfJumpsAvailable;
+    private bool grounded = true;
 
     //input actions
     private InputAction move;
+    private InputAction look;
     private InputAction fire;
     private InputAction jump;
 
@@ -41,6 +67,9 @@ public class PlayerController : MonoBehaviour
     {
         move = playerInputScript.Player.Move;
         move.Enable();
+
+        look = playerInputScript.Player.Look;
+        look.Enable();
 
         fire = playerInputScript.Player.Fire;
         fire.Enable();
@@ -54,6 +83,7 @@ public class PlayerController : MonoBehaviour
     private void OnDisable()
     {
         move.Disable();
+        look.Disable();
         fire.Disable();
         jump.Disable(); 
     }
@@ -61,51 +91,75 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         playerInputScript = new NewInputSystemScript();
-        rb = GetComponent<Rigidbody>();
+        controller = GetComponent<CharacterController>();
+        mainCameraTransform = GameObject.Find("Main Camera").transform;
+        mainCamera = mainCameraTransform.gameObject.GetComponent<Camera>();
+        cameraAimAt = GameObject.Find("LookAtMe").transform;
     }
 
     private void Start()
     {
-        
+        originalNumberOfJumpsAvailable = jumpsAvailable;
+
+        Cursor.visible = false;
     }
 
     private void Update()
     {
-        moveDirection = move.ReadValue<Vector2>();
+        //Where does the camera look at?
+        var mousePosition = mainCamera.ScreenToWorldPoint(look.ReadValue<Vector2>());
+        var cameraPosition = (mousePosition + (cameraTargetDivider - 1) * transform.position) / cameraTargetDivider;
+        cameraAimAt.position = cameraPosition;
+
+        JumpingAndGravity();
+        Moving();
     }
 
-    private void FixedUpdate()
-    {
-        rb.AddForce(new Vector3(moveDirection.x * moveSpeed, 0f, moveDirection.y * moveSpeed), ForceMode.Impulse);
-    }
-
-    private void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.layer == ((int)groundLayer))
-        {
-            grounded = true;
-        }
-    }
-
-    private void OnCollisionExit(Collision collision)
-    {
-        if (collision.gameObject.layer == ((int)groundLayer))
-        {
-            grounded = false;
-        }
-    }
 
     private void Fire(InputAction.CallbackContext context)
     {
-        Debug.Log("We Fired");
+        //Debug.Log("We Fired");
     }
 
     private void Jump(InputAction.CallbackContext context)
     {
-        if (grounded) 
+        if (jumpsAvailable > 0)
         {
-            grounded = false;   
-            rb.AddForce(new Vector3(0f, jumpForce, 0f), playerForceMode); 
+            verticalVelocity.y = jumpForce;
+            controller.Move(verticalVelocity * Time.deltaTime);
+            jumpsAvailable--;
+        }
+    }
+
+
+    private void JumpingAndGravity()
+    {
+        grounded = Physics.CheckSphere(feet.position, groundCheckRadius, groundLayer);
+
+        if (grounded && verticalVelocity.y < 0f)
+        {
+            verticalVelocity.y = -10f;
+            jumpsAvailable = originalNumberOfJumpsAvailable;
+        }
+        else
+        {
+            verticalVelocity.y -= gravity * Time.deltaTime;
+        }
+        controller.Move(verticalVelocity * Time.deltaTime);
+    }
+
+    private void Moving()
+    {
+        moveDirection = new Vector3(move.ReadValue<Vector2>().x, 0f, move.ReadValue<Vector2>().y).normalized;
+        if (moveDirection.magnitude >= 0.1f)
+        {
+            float targetAngle = Mathf.Atan2(moveDirection.x, moveDirection.z) * Mathf.Rad2Deg + mainCameraTransform.eulerAngles.y;
+            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, smoothRotationTime);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+
+            controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
         }
     }
 }
