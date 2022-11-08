@@ -44,21 +44,43 @@ public class PlayerController : MonoBehaviour
     [SerializeField] 
     private float cameraTargetDivider;
 
+    [Tooltip("The Distance the player travels when dashing")]
+    [SerializeField]
+    private float dashDistance;
+
+    [Tooltip("The time the player needs to wait for the dash to be available again")]
+    [SerializeField]
+    private float dashCooldown;
+
+    //privats
     private NewInputSystemScript playerInputScript; 
+    
+    //Vector3s
     private Vector3 moveDirection = Vector3.zero;
     private Vector3 verticalVelocity = Vector3.zero;
+    
+    //other components
     private CharacterController controller;
+    private Camera mainCamera;
+
+    //Transforms
     private Transform mainCameraTransform;
     private Transform cameraAimAt;
-    private Camera mainCamera;
+    
+    //floats
     private float turnSmoothVelocity;
+    
+    //ints
     private int originalNumberOfJumpsAvailable;
+    
+    //bools
     private bool grounded = true;
+    private bool canDash = true;
 
     //input actions
     private InputAction move;
     private InputAction look;
-    private InputAction fire;
+    private InputAction dash;
     private InputAction jump;
 
 
@@ -71,9 +93,9 @@ public class PlayerController : MonoBehaviour
         look = playerInputScript.Player.Look;
         look.Enable();
 
-        fire = playerInputScript.Player.Fire;
-        fire.Enable();
-        fire.performed += Fire;
+        dash = playerInputScript.Player.Dash;
+        dash.Enable();
+        dash.performed += Dash;
 
         jump = playerInputScript.Player.Jump;
         jump.Enable();
@@ -84,7 +106,7 @@ public class PlayerController : MonoBehaviour
     {
         move.Disable();
         look.Disable();
-        fire.Disable();
+        dash.Disable();
         jump.Disable(); 
     }
 
@@ -116,9 +138,18 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    private void Fire(InputAction.CallbackContext context)
+    private void Dash(InputAction.CallbackContext context)
     {
-        //Debug.Log("We Fired");
+        //Reminder: add dash time
+        if (canDash)
+        {
+            canDash = false;
+            StartCoroutine(DashCooldown());
+            Vector3 dashDirection = mainCameraTransform.forward;
+            dashDirection.y = 0f;
+            controller.Move(dashDirection.normalized * dashDistance);
+            jumpsAvailable = originalNumberOfJumpsAvailable;
+        }
     }
 
     private void Jump(InputAction.CallbackContext context)
@@ -130,7 +161,6 @@ public class PlayerController : MonoBehaviour
             jumpsAvailable--;
         }
     }
-
 
     private void JumpingAndGravity()
     {
@@ -161,5 +191,13 @@ public class PlayerController : MonoBehaviour
 
             controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
         }
+    }
+
+    //Coroutines
+
+    IEnumerator DashCooldown()
+    {
+        yield return new WaitForSeconds(dashCooldown);
+        canDash = true;
     }
 }
