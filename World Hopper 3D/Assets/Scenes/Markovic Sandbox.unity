@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -935,11 +935,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7163361779044676505, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.000000019712772
+      value: -0.000000018988336
       objectReference: {fileID: 0}
     - target: {fileID: 7163361779044676505, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.000000003202733
+      value: 0.0000000030850345
       objectReference: {fileID: 0}
     - target: {fileID: 7163361779296706684, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_RootOrder
@@ -984,6 +984,30 @@ PrefabInstance:
     - target: {fileID: 7163361779296706684, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779296706686, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: gravity
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779296706686, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: jumpForce
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779296706686, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: moveSpeed
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779296706686, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: dashDistance
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779296706686, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: jumpsAvailable
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7163361779296706686, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
+      propertyPath: smoothRotationTime
+      value: 0.225
       objectReference: {fileID: 0}
     - target: {fileID: 7163361779296706687, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_Name
@@ -1039,11 +1063,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7163361780074756752, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 9.317246e-23
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7163361780074756752, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -8.221109e-24
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7163361780118595921, guid: c5fa58f03f9b008479be2ed5f84f42eb, type: 3}
       propertyPath: m_FollowOffset.y
