@@ -189,7 +189,7 @@ public class PlayerController : MonoBehaviour
     {
         if (jumpsAvailable > 0)
         {
-            verticalVelocity.y = jumpForce;
+            verticalVelocity.y = jumpSpeed;
             controller.Move(verticalVelocity * Time.deltaTime);
             jumpsAvailable--;
         }
