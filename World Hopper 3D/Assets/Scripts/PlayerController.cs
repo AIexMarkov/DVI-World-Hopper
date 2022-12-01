@@ -24,7 +24,7 @@ public class PlayerController : MonoBehaviour
     private float gravity;
 
     [Tooltip("The amount of jumps the player has")]
-    [Range (1, 5)]
+    [Range (1, 10000)]
     public int jumpsAvailable = 2;
 
     [Tooltip("The Feet position, relevant for ground checks and jumping")]
