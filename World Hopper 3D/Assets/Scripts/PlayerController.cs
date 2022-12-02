@@ -15,9 +15,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] [Range (0f, 1f)]
     private float smoothRotationTime = 0.1f;
 
-    [Tooltip("The force of player jump")]
+    [Tooltip("The speed of player jump")]
     [SerializeField]
-    private float jumpForce;
+    private float jumpSpeed;
 
     [Tooltip("The player uses it's own, independent gravity, and doesn't interact with Rigidbodies")]
     [SerializeField]
@@ -48,9 +48,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float dashDistance;
 
+    [Tooltip("The time it takes after dashing to slow down")]
+    [SerializeField] [Range (1.5f, 5f)]
+    private float dashSlowdown;
+
+    [Tooltip("The slowest speed of a dash before stopping")]
+    [SerializeField]
+    [Range(0.1f, 1f)]
+    private float dashSpeedLimit;
+
     [Tooltip("The time the player needs to wait for the dash to be available again")]
     [SerializeField]
     private float dashCooldown;
+
 
     //privats
     private NewInputSystemScript playerInputScript; 
@@ -58,7 +68,9 @@ public class PlayerController : MonoBehaviour
     //Vector3s
     private Vector3 moveDirection = Vector3.zero;
     private Vector3 verticalVelocity = Vector3.zero;
-    
+    private Vector3 dashingVector = Vector3.zero;
+
+
     //other components
     private CharacterController controller;
     private Camera mainCamera;
@@ -76,6 +88,7 @@ public class PlayerController : MonoBehaviour
     //bools
     private bool grounded = true;
     private bool canDash = true;
+    private bool dashing = false;
 
     //input actions
     private InputAction move;
@@ -135,20 +148,40 @@ public class PlayerController : MonoBehaviour
 
         JumpingAndGravity();
         Moving();
+        if (dashing) Dashing();
     }
 
 
     private void Dash(InputAction.CallbackContext context)
     {
-        //Reminder: add dash time
         if (canDash)
         {
             canDash = false;
+            dashing = true;
+            verticalVelocity = Vector3.zero;
+
             StartCoroutine(DashCooldown());
             Vector3 dashDirection = mainCameraTransform.forward;
             dashDirection.y = 0f;
-            controller.Move(dashDirection.normalized * dashDistance);
+            
+            dashingVector = dashDirection.normalized * dashDistance;
+            dashingVector.y = 0f;
+            //controller.Move(dashDirection.normalized * dashDistance);
             jumpsAvailable = originalNumberOfJumpsAvailable;
+        }
+    }
+
+    private void Dashing()
+    {
+        if (dashingVector.magnitude > dashSpeedLimit)
+        {
+            controller.Move(dashingVector * Time.deltaTime);
+            dashingVector = Vector3.Lerp(dashingVector, Vector3.zero, dashSlowdown * Time.deltaTime);
+        }
+        else
+        {
+            dashingVector = Vector3.zero;
+            dashing = false;
         }
     }
 
@@ -156,7 +189,7 @@ public class PlayerController : MonoBehaviour
     {
         if (jumpsAvailable > 0)
         {
-            verticalVelocity.y = jumpForce;
+            verticalVelocity.y = jumpSpeed;
             controller.Move(verticalVelocity * Time.deltaTime);
             jumpsAvailable--;
         }
