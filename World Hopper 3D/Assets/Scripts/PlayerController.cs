@@ -5,6 +5,51 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    class AnimatorController : MonoBehaviour
+    {
+        //Variables
+        Transform modelTransform;
+        Animator modelAnimator;
+
+        //Constructor
+        public AnimatorController(Transform transform)
+        {
+            modelTransform = transform;
+            modelAnimator = transform.gameObject.GetComponent<Animator>();
+        }
+
+        //Methods
+        public void SetSpeed(float speed)
+        {
+            modelAnimator.SetFloat("Speed", speed);
+        }
+
+        public void SetDirection(float direction)
+        {
+            modelAnimator.SetFloat("Direction", direction);
+        }
+
+        public void SetJumpBool(bool jumpBool)
+        {
+            modelAnimator.SetBool("Jump", jumpBool);
+        }
+
+        public void SetRestBool(bool restBool)
+        {
+            modelAnimator.SetBool("Rest", restBool);
+        }
+
+        public void SetJumpHeight(float jumpHeight)
+        {
+            modelAnimator.SetFloat("JumpHeight", jumpHeight);
+        }
+
+        public void SetGravityControl(float gravityControl)
+        {
+            modelAnimator.SetFloat("GravityControl", gravityControl);
+        }
+    }
+    
     //Variables
     [Header("Player Movement")]
     [Tooltip("The speed the player moves")]
@@ -74,6 +119,7 @@ public class PlayerController : MonoBehaviour
     //other components
     private CharacterController controller;
     private Camera mainCamera;
+    private AnimatorController animatorController;
 
     //Transforms
     private Transform mainCameraTransform;
@@ -81,6 +127,8 @@ public class PlayerController : MonoBehaviour
     
     //floats
     private float turnSmoothVelocity;
+    private float moveValueForAnimator;
+    private float jumpHeightValueForAnimator;
     
     //ints
     private int originalNumberOfJumpsAvailable;
@@ -89,6 +137,7 @@ public class PlayerController : MonoBehaviour
     private bool grounded = true;
     private bool canDash = true;
     private bool dashing = false;
+    private bool jumpBoolForAnimator;
 
     //input actions
     private InputAction move;
@@ -130,6 +179,7 @@ public class PlayerController : MonoBehaviour
         mainCameraTransform = GameObject.Find("Main Camera").transform;
         mainCamera = mainCameraTransform.gameObject.GetComponent<Camera>();
         cameraAimAt = GameObject.Find("LookAtMe").transform;
+        animatorController = new AnimatorController(GameObject.Find("Animated Model").transform);
     }
 
     private void Start()
@@ -148,6 +198,10 @@ public class PlayerController : MonoBehaviour
 
         JumpingAndGravity();
         Moving();
+
+        animatorController.SetSpeed(moveValueForAnimator);
+        animatorController.SetJumpBool(jumpBoolForAnimator);
+
         if (dashing) Dashing();
     }
 
@@ -192,6 +246,7 @@ public class PlayerController : MonoBehaviour
             verticalVelocity.y = jumpSpeed;
             controller.Move(verticalVelocity * Time.deltaTime);
             jumpsAvailable--;
+            jumpBoolForAnimator = true;
         }
     }
 
@@ -203,6 +258,7 @@ public class PlayerController : MonoBehaviour
         {
             verticalVelocity.y = -10f;
             jumpsAvailable = originalNumberOfJumpsAvailable;
+            jumpBoolForAnimator = false;
         }
         else
         {
@@ -223,6 +279,13 @@ public class PlayerController : MonoBehaviour
             Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
 
             controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
+            moveValueForAnimator = (moveDir.normalized * moveSpeed * Time.deltaTime).magnitude;
+        }
+
+        if (moveDirection.magnitude >= 0.1f)
+        {
+            animatorController.SetDirection(moveDirection.x);
+
         }
     }
 
