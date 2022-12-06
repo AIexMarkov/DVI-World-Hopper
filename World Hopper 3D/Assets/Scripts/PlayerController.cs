@@ -52,6 +52,7 @@ public class PlayerController : MonoBehaviour
     
     //Variables
     [Header("Player Movement")]
+
     [Tooltip("The speed the player moves")]
     [SerializeField]
     private float moveSpeed;
@@ -59,6 +60,10 @@ public class PlayerController : MonoBehaviour
     [Tooltip("The smoothness of player rotation, keep low")]
     [SerializeField] [Range (0f, 1f)]
     private float smoothRotationTime = 0.1f;
+
+    [Space(10)]
+
+    [Header("Player Jumping")]
 
     [Tooltip("The speed of player jump")]
     [SerializeField]
@@ -84,10 +89,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private LayerMask groundLayer;
 
+    [Space(10)]
+
+    [Header("Camera Variables")]
+
     [Tooltip("Related to the camera aim")]
     [Range(2, 100)] 
     [SerializeField] 
     private float cameraTargetDivider;
+
+    [Space(10)]
+
+    [Header("Player Dash")]
 
     [Tooltip("The Distance the player travels when dashing")]
     [SerializeField]
@@ -106,6 +119,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float dashCooldown;
 
+    [Space(10)]
+
+    [Header("Player Sliding")]
+
+    [Tooltip("The amount of distance in meters the player moves when sliding")]
+    [SerializeField]
+    private float slidingDistance;
 
     //privats
     private NewInputSystemScript playerInputScript; 
@@ -144,6 +164,7 @@ public class PlayerController : MonoBehaviour
     private InputAction look;
     private InputAction dash;
     private InputAction jump;
+    private InputAction slide;
 
 
     //Methods
@@ -162,6 +183,10 @@ public class PlayerController : MonoBehaviour
         jump = playerInputScript.Player.Jump;
         jump.Enable();
         jump.performed += Jump;
+
+        slide = playerInputScript.Player.Slide;
+        slide.Enable();
+        slide.performed += Slide;
     }
 
     private void OnDisable()
@@ -170,6 +195,7 @@ public class PlayerController : MonoBehaviour
         look.Disable();
         dash.Disable();
         jump.Disable(); 
+        slide.Disable(); 
     }
 
     private void Awake()
@@ -237,6 +263,11 @@ public class PlayerController : MonoBehaviour
             dashingVector = Vector3.zero;
             dashing = false;
         }
+    }
+
+    private void Slide(InputAction.CallbackContext context)
+    {
+
     }
 
     private void Jump(InputAction.CallbackContext context)
