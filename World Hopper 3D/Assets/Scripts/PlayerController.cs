@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    class AnimatorController : MonoBehaviour
+    class AnimatorController
     {
         //Variables
         Transform modelTransform;
@@ -19,6 +19,11 @@ public class PlayerController : MonoBehaviour
         }
 
         //Methods
+        public void RotateModel(Vector3 rotation)
+        {
+            modelTransform.localRotation = Quaternion.Euler(rotation);
+        }
+
         public void SetSpeed(float speed)
         {
             modelAnimator.SetFloat("Speed", speed);
@@ -29,15 +34,11 @@ public class PlayerController : MonoBehaviour
             modelAnimator.SetFloat("Direction", direction);
         }
 
-        public void SetJumpBool(bool jumpBool)
+        public void SetJumpTrigger()
         {
-            modelAnimator.SetBool("Jump", jumpBool);
+            modelAnimator.SetTrigger("Jump");
         }
 
-        public void SetRestBool(bool restBool)
-        {
-            modelAnimator.SetBool("Rest", restBool);
-        }
 
         public void SetJumpHeight(float jumpHeight)
         {
@@ -127,6 +128,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float slidingDistance;
 
+    [Tooltip("The speed of player movement when sliding")]
+    [SerializeField]
+    private float slidingSpeed;
+
+    [Tooltip("The maximum amount of momentum the player gains from sliding")]
+    [SerializeField]
+    private float maximumSlideMomentum;
+
+    [Tooltip("The amount of seconds it needs to pass for the player to slide again")]
+    [SerializeField]
+    private float slideCooldown;
+
     //privats
     private NewInputSystemScript playerInputScript; 
     
@@ -134,7 +147,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 moveDirection = Vector3.zero;
     private Vector3 verticalVelocity = Vector3.zero;
     private Vector3 dashingVector = Vector3.zero;
-
+    private Vector3 startSlidePos = Vector3.zero;
 
     //other components
     private CharacterController controller;
@@ -144,9 +157,10 @@ public class PlayerController : MonoBehaviour
     //Transforms
     private Transform mainCameraTransform;
     private Transform cameraAimAt;
-    
+
     //floats
     private float turnSmoothVelocity;
+    private float momentum = 0f;
     private float moveValueForAnimator;
     private float jumpHeightValueForAnimator;
     
@@ -157,7 +171,9 @@ public class PlayerController : MonoBehaviour
     private bool grounded = true;
     private bool canDash = true;
     private bool dashing = false;
-    private bool jumpBoolForAnimator;
+    private bool jumpBoolForAnimator = false;
+    private bool canSlide = true;
+    private bool sliding = false;
 
     //input actions
     private InputAction move;
@@ -223,10 +239,11 @@ public class PlayerController : MonoBehaviour
         cameraAimAt.position = cameraPosition;
 
         JumpingAndGravity();
-        Moving();
 
-        animatorController.SetSpeed(moveValueForAnimator);
-        animatorController.SetJumpBool(jumpBoolForAnimator);
+        if (!sliding) Moving();
+        else if (sliding) Sliding();
+
+        animatorController.SetSpeed(moveDirection.magnitude);
 
         if (dashing) Dashing();
     }
@@ -236,18 +253,36 @@ public class PlayerController : MonoBehaviour
     {
         if (canDash)
         {
-            canDash = false;
-            dashing = true;
-            verticalVelocity = Vector3.zero;
+            if (sliding)
+            {
+                sliding = false;
+                animatorController.RotateModel(new Vector3(0f, 0f, 0f));
+                canDash = false;
+                dashing = true;
+                verticalVelocity = Vector3.zero;
 
-            StartCoroutine(DashCooldown());
-            Vector3 dashDirection = mainCameraTransform.forward;
-            dashDirection.y = 0f;
-            
-            dashingVector = dashDirection.normalized * dashDistance;
-            dashingVector.y = 0f;
-            //controller.Move(dashDirection.normalized * dashDistance);
-            jumpsAvailable = originalNumberOfJumpsAvailable;
+                StartCoroutine(DashCooldown());
+                Vector3 dashDirection = mainCameraTransform.forward;
+                dashDirection.y = 0f;
+
+                dashingVector = dashDirection.normalized * (dashDistance + momentum);
+                dashingVector.y = 0f;
+                jumpsAvailable = originalNumberOfJumpsAvailable;
+            }
+            else
+            {
+                canDash = false;
+                dashing = true;
+                verticalVelocity = Vector3.zero;
+
+                StartCoroutine(DashCooldown());
+                Vector3 dashDirection = mainCameraTransform.forward;
+                dashDirection.y = 0f;
+
+                dashingVector = dashDirection.normalized * dashDistance;
+                dashingVector.y = 0f;
+                jumpsAvailable = originalNumberOfJumpsAvailable;
+            }
         }
     }
 
@@ -267,17 +302,52 @@ public class PlayerController : MonoBehaviour
 
     private void Slide(InputAction.CallbackContext context)
     {
+        if (canSlide && grounded)
+        {
+            sliding = true;
+            canSlide = false;
+            StartCoroutine(SlideCooldown());
+            startSlidePos = transform.position;
+        }
+    }
 
+    private void Sliding()
+    {
+        Vector3 stirDirection = new Vector3(move.ReadValue<Vector2>().x / 3f, 0f, 0f);
+
+        controller.Move((transform.forward + stirDirection).normalized * slidingSpeed * Time.deltaTime);
+        momentum = Mathf.Lerp(0f, maximumSlideMomentum, ((transform.position - startSlidePos).magnitude) / slidingDistance);
+        animatorController.RotateModel(new Vector3(-60f, 0f, 0f));
+
+        if ((transform.position - startSlidePos).magnitude >= slidingDistance)
+        {
+            sliding = false;
+            animatorController.RotateModel(new Vector3(0f, 0f, 0f));
+        }
     }
 
     private void Jump(InputAction.CallbackContext context)
     {
         if (jumpsAvailable > 0)
         {
-            verticalVelocity.y = jumpSpeed;
-            controller.Move(verticalVelocity * Time.deltaTime);
-            jumpsAvailable--;
-            jumpBoolForAnimator = true;
+            if (sliding)
+            {
+                sliding = false;
+                animatorController.RotateModel(new Vector3(0f, 0f, 0f));
+                verticalVelocity.y = jumpSpeed + momentum;
+                controller.Move(verticalVelocity * Time.deltaTime);
+                jumpsAvailable--;
+                jumpBoolForAnimator = true;
+            }
+            else
+            {
+                verticalVelocity.y = jumpSpeed;
+                controller.Move(verticalVelocity * Time.deltaTime);
+                jumpsAvailable--;
+                jumpBoolForAnimator = true;
+            }
+            
+            if (originalNumberOfJumpsAvailable - jumpsAvailable == 1) animatorController.SetJumpTrigger();
         }
     }
 
@@ -289,7 +359,7 @@ public class PlayerController : MonoBehaviour
         {
             verticalVelocity.y = -10f;
             jumpsAvailable = originalNumberOfJumpsAvailable;
-            jumpBoolForAnimator = false;
+            //jumpBoolForAnimator = false;
         }
         else
         {
@@ -312,12 +382,6 @@ public class PlayerController : MonoBehaviour
             controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
             moveValueForAnimator = (moveDir.normalized * moveSpeed * Time.deltaTime).magnitude;
         }
-
-        if (moveDirection.magnitude >= 0.1f)
-        {
-            animatorController.SetDirection(moveDirection.x);
-
-        }
     }
 
     //Coroutines
@@ -326,5 +390,11 @@ public class PlayerController : MonoBehaviour
     {
         yield return new WaitForSeconds(dashCooldown);
         canDash = true;
+    }
+
+    IEnumerator SlideCooldown()
+    {
+        yield return new WaitForSeconds(slideCooldown);
+        canSlide = true;
     }
 }
