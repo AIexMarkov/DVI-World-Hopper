@@ -116,7 +116,7 @@ public class PlayerController : MonoBehaviour
     [Range(0.1f, 1f)]
     private float dashSpeedLimit;
 
-    [Tooltip("The time the player needs to wait for the dash to be available again")]
+    [Tooltip("The time the player needs to wait for the dash to be available again if on ground")]
     [SerializeField]
     private float dashCooldown;
 
@@ -261,7 +261,7 @@ public class PlayerController : MonoBehaviour
                 dashing = true;
                 verticalVelocity = Vector3.zero;
 
-                StartCoroutine(DashCooldown());
+                if(grounded) StartCoroutine(DashCooldown());
                 Vector3 dashDirection = mainCameraTransform.forward;
                 dashDirection.y = 0f;
 
@@ -275,7 +275,7 @@ public class PlayerController : MonoBehaviour
                 dashing = true;
                 verticalVelocity = Vector3.zero;
 
-                StartCoroutine(DashCooldown());
+                if(grounded) StartCoroutine(DashCooldown());
                 Vector3 dashDirection = mainCameraTransform.forward;
                 dashDirection.y = 0f;
 
@@ -359,6 +359,7 @@ public class PlayerController : MonoBehaviour
         {
             verticalVelocity.y = -10f;
             jumpsAvailable = originalNumberOfJumpsAvailable;
+            canDash = true;
             //jumpBoolForAnimator = false;
         }
         else

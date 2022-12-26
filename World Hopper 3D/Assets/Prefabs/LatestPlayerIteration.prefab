@@ -111,9 +111,9 @@ MonoBehaviour:
     m_Bits: 1
   cameraTargetDivider: 30
   dashDistance: 50
-  dashSlowdown: 3
-  dashSpeedLimit: 0.2
-  dashCooldown: 2
+  dashSlowdown: 4
+  dashSpeedLimit: 0.15
+  dashCooldown: 1
   slidingDistance: 25
   slidingSpeed: 15
   maximumSlideMomentum: 15
