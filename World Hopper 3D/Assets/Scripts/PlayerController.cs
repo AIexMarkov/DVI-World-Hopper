@@ -103,7 +103,11 @@ public class PlayerController : MonoBehaviour
 
     [Header("Player Dash")]
 
-    [Tooltip("The Distance the player travels when dashing")]
+    [Tooltip("The speed the player travels when dashing")]
+    [SerializeField]
+    private float dashSpeed;
+
+    [Tooltip("The distance the player travels when dashing")]
     [SerializeField]
     private float dashDistance;
 
@@ -148,6 +152,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 verticalVelocity = Vector3.zero;
     private Vector3 dashingVector = Vector3.zero;
     private Vector3 startSlidePos = Vector3.zero;
+    private Vector3 startDashPos = Vector3.zero;
 
     //other components
     private CharacterController controller;
@@ -283,15 +288,21 @@ public class PlayerController : MonoBehaviour
                 dashingVector.y = 0f;
                 jumpsAvailable = originalNumberOfJumpsAvailable;
             }
+
+            startDashPos = transform.position;
+            startDashPos.y = 0f;
         }
     }
 
     private void Dashing()
     {
-        if (dashingVector.magnitude > dashSpeedLimit)
+        Vector3 playerPosNoY = new Vector3(transform.position.x, 0f, transform.position.z);
+        var dashTravelled = playerPosNoY - startDashPos;
+
+        if (dashTravelled.magnitude <= dashDistance)
         {
-            controller.Move(dashingVector * Time.deltaTime);
-            dashingVector = Vector3.Lerp(dashingVector, Vector3.zero, dashSlowdown * Time.deltaTime);
+            controller.Move(dashingVector * dashSpeed * Time.deltaTime);
+            //dashingVector = Vector3.Lerp(dashingVector, Vector3.zero, dashSlowdown * Time.deltaTime);
         }
         else
         {
