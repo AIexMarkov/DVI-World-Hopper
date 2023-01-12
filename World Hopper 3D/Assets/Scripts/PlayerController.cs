@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
@@ -144,6 +146,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float slideCooldown;
 
+    //placeholders
+    public Image jumpImage;
+    public Image dashImage;
+    public Image slideImage;
+    public TextMeshProUGUI jumpCountText;
+    public TextMeshProUGUI dashSecondsText;
+
     //privats
     private NewInputSystemScript playerInputScript; 
     
@@ -171,6 +180,7 @@ public class PlayerController : MonoBehaviour
     
     //ints
     private int originalNumberOfJumpsAvailable;
+    private int dashSeconds;
     
     //bools
     private bool grounded = true;
@@ -179,6 +189,7 @@ public class PlayerController : MonoBehaviour
     private bool jumpBoolForAnimator = false;
     private bool canSlide = true;
     private bool sliding = false;
+    private bool canRefreshDash = false;
 
     //input actions
     private InputAction move;
@@ -232,6 +243,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         originalNumberOfJumpsAvailable = jumpsAvailable;
+        dashSeconds = Mathf.RoundToInt(dashCooldown);
 
         Cursor.visible = false;
     }
@@ -245,12 +257,48 @@ public class PlayerController : MonoBehaviour
 
         JumpingAndGravity();
 
-        if (!sliding) Moving();
+        if (!sliding)
+        {
+            Moving();
+            momentum = 0f;
+        }
         else if (sliding) Sliding();
 
         animatorController.SetSpeed(moveDirection.magnitude);
 
         if (dashing) Dashing();
+
+        //icon placeholders
+        if (jumpsAvailable > 0)
+        {
+            jumpImage.color = new Color(1f, 1f, 1f, 1f);
+            jumpCountText.text = jumpsAvailable.ToString();
+        }
+        else
+        {
+            jumpImage.color = new Color(1f, 1f, 1f, 0.3f);
+            jumpCountText.text = "0";
+        }
+
+        if (canDash)
+        {
+            dashImage.color = new Color(1f, 1f, 1f, 1f);
+            dashSecondsText.text = "";
+        }
+        else
+        {
+            dashImage.color = new Color(1f, 1f, 1f, 0.3f);
+            dashSecondsText.text = dashSeconds.ToString();
+        }
+
+        if (canSlide && grounded)
+        {
+            slideImage.color = new Color(1f, 1f, 1f, 1f);
+        }
+        else
+        {
+            slideImage.color = new Color(1f, 1f, 1f, 0.3f);
+        }
     }
 
 
@@ -266,7 +314,7 @@ public class PlayerController : MonoBehaviour
                 dashing = true;
                 verticalVelocity = Vector3.zero;
 
-                if(grounded) StartCoroutine(DashCooldown());
+                StartCoroutine(DashCooldown());
                 Vector3 dashDirection = mainCameraTransform.forward;
                 dashDirection.y = 0f;
 
@@ -280,7 +328,7 @@ public class PlayerController : MonoBehaviour
                 dashing = true;
                 verticalVelocity = Vector3.zero;
 
-                if(grounded) StartCoroutine(DashCooldown());
+                StartCoroutine(DashCooldown());
                 Vector3 dashDirection = mainCameraTransform.forward;
                 dashDirection.y = 0f;
 
@@ -299,7 +347,7 @@ public class PlayerController : MonoBehaviour
         Vector3 playerPosNoY = new Vector3(transform.position.x, 0f, transform.position.z);
         var dashTravelled = playerPosNoY - startDashPos;
 
-        if (dashTravelled.magnitude <= dashDistance)
+        if (dashTravelled.magnitude <= dashDistance + momentum)
         {
             controller.Move(dashingVector * dashSpeed * Time.deltaTime);
             //dashingVector = Vector3.Lerp(dashingVector, Vector3.zero, dashSlowdown * Time.deltaTime);
@@ -326,6 +374,7 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 stirDirection = new Vector3(move.ReadValue<Vector2>().x / 3f, 0f, 0f);
 
+        transform.forward = mainCamera.transform.forward;
         controller.Move((transform.forward + stirDirection).normalized * slidingSpeed * Time.deltaTime);
         momentum = Mathf.Lerp(0f, maximumSlideMomentum, ((transform.position - startSlidePos).magnitude) / slidingDistance);
         animatorController.RotateModel(new Vector3(-60f, 0f, 0f));
@@ -370,7 +419,12 @@ public class PlayerController : MonoBehaviour
         {
             verticalVelocity.y = -10f;
             jumpsAvailable = originalNumberOfJumpsAvailable;
-            canDash = true;
+            if (canRefreshDash)
+            {
+                canRefreshDash = false;
+                dashSeconds = Mathf.RoundToInt(dashCooldown);
+                canDash = true;
+            }
             //jumpBoolForAnimator = false;
         }
         else
@@ -400,8 +454,16 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator DashCooldown()
     {
-        yield return new WaitForSeconds(dashCooldown);
-        canDash = true;
+        yield return new WaitForSeconds(1f);
+        dashSeconds--;
+        if (dashSeconds > 0)
+        {
+            StartCoroutine(DashCooldown());
+        }
+        else if (!canDash)
+        {
+            canRefreshDash = true;
+        }
     }
 
     IEnumerator SlideCooldown()
