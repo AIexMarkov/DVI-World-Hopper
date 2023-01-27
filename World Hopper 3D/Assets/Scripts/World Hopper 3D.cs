@@ -71,6 +71,15 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""KillPlayer"",
+                    ""type"": ""Button"",
+                    ""id"": ""bd207134-c50d-4e4c-9e4b-40bf14a91416"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -313,6 +322,17 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
                     ""action"": ""Slide"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a75d2abe-e819-461c-a4ed-328f855a35fb"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""KillPlayer"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -905,6 +925,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
         m_Player_Dash = m_Player.FindAction("Dash", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Slide = m_Player.FindAction("Slide", throwIfNotFound: true);
+        m_Player_KillPlayer = m_Player.FindAction("KillPlayer", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -981,6 +1002,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
     private readonly InputAction m_Player_Dash;
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Slide;
+    private readonly InputAction m_Player_KillPlayer;
     public struct PlayerActions
     {
         private @NewInputSystemScript m_Wrapper;
@@ -990,6 +1012,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
         public InputAction @Dash => m_Wrapper.m_Player_Dash;
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
         public InputAction @Slide => m_Wrapper.m_Player_Slide;
+        public InputAction @KillPlayer => m_Wrapper.m_Player_KillPlayer;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1014,6 +1037,9 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                 @Slide.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSlide;
                 @Slide.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSlide;
                 @Slide.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnSlide;
+                @KillPlayer.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnKillPlayer;
+                @KillPlayer.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnKillPlayer;
+                @KillPlayer.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnKillPlayer;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -1033,6 +1059,9 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                 @Slide.started += instance.OnSlide;
                 @Slide.performed += instance.OnSlide;
                 @Slide.canceled += instance.OnSlide;
+                @KillPlayer.started += instance.OnKillPlayer;
+                @KillPlayer.performed += instance.OnKillPlayer;
+                @KillPlayer.canceled += instance.OnKillPlayer;
             }
         }
     }
@@ -1194,6 +1223,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
         void OnDash(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnSlide(InputAction.CallbackContext context);
+        void OnKillPlayer(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {
