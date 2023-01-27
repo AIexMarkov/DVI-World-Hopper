@@ -167,6 +167,7 @@ public class PlayerController : MonoBehaviour
     private CharacterController controller;
     private Camera mainCamera;
     private AnimatorController animatorController;
+    private CheckpointManager checkpointManager;
 
     //Transforms
     private Transform mainCameraTransform;
@@ -197,6 +198,7 @@ public class PlayerController : MonoBehaviour
     private InputAction dash;
     private InputAction jump;
     private InputAction slide;
+    private InputAction killPlayer;
 
 
     //Methods
@@ -219,6 +221,10 @@ public class PlayerController : MonoBehaviour
         slide = playerInputScript.Player.Slide;
         slide.Enable();
         slide.performed += Slide;
+
+        killPlayer = playerInputScript.Player.KillPlayer;
+        killPlayer.Enable();
+        killPlayer.performed += KillPlayer;
     }
 
     private void OnDisable()
@@ -227,7 +233,8 @@ public class PlayerController : MonoBehaviour
         look.Disable();
         dash.Disable();
         jump.Disable(); 
-        slide.Disable(); 
+        slide.Disable();
+        killPlayer.Disable();
     }
 
     private void Awake()
@@ -238,6 +245,7 @@ public class PlayerController : MonoBehaviour
         mainCamera = mainCameraTransform.gameObject.GetComponent<Camera>();
         cameraAimAt = GameObject.Find("LookAtMe").transform;
         animatorController = new AnimatorController(GameObject.Find("Animated Model").transform);
+        checkpointManager = FindObjectOfType<CheckpointManager>();
     }
 
     private void Start()
@@ -301,6 +309,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void KillPlayer(InputAction.CallbackContext context)
+    {
+        checkpointManager.RespawnPlayer();
+    }
 
     private void Dash(InputAction.CallbackContext context)
     {
