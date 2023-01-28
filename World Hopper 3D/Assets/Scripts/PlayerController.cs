@@ -371,6 +371,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void ResetDash()
+    {
+        dashSeconds = Mathf.RoundToInt(dashCooldown);
+        canDash = true;
+    }
+
     private void Slide(InputAction.CallbackContext context)
     {
         if (canSlide && grounded)
@@ -460,6 +466,11 @@ public class PlayerController : MonoBehaviour
             controller.Move(moveDir.normalized * moveSpeed * Time.deltaTime);
             moveValueForAnimator = (moveDir.normalized * moveSpeed * Time.deltaTime).magnitude;
         }
+    }
+
+    public bool ReturnDashing()
+    {
+        return dashing;
     }
 
     //Coroutines
