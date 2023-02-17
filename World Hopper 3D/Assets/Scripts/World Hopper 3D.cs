@@ -80,6 +80,15 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Freelook"",
+                    ""type"": ""Button"",
+                    ""id"": ""479261ae-bb84-4b4a-ab16-8557ef7a7b5f"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -333,6 +342,17 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""KillPlayer"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8ee40337-6e28-4821-b178-1dcd534e0284"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Freelook"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -926,6 +946,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Slide = m_Player.FindAction("Slide", throwIfNotFound: true);
         m_Player_KillPlayer = m_Player.FindAction("KillPlayer", throwIfNotFound: true);
+        m_Player_Freelook = m_Player.FindAction("Freelook", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1003,6 +1024,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Slide;
     private readonly InputAction m_Player_KillPlayer;
+    private readonly InputAction m_Player_Freelook;
     public struct PlayerActions
     {
         private @NewInputSystemScript m_Wrapper;
@@ -1013,6 +1035,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
         public InputAction @Jump => m_Wrapper.m_Player_Jump;
         public InputAction @Slide => m_Wrapper.m_Player_Slide;
         public InputAction @KillPlayer => m_Wrapper.m_Player_KillPlayer;
+        public InputAction @Freelook => m_Wrapper.m_Player_Freelook;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1040,6 +1063,9 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                 @KillPlayer.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnKillPlayer;
                 @KillPlayer.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnKillPlayer;
                 @KillPlayer.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnKillPlayer;
+                @Freelook.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFreelook;
+                @Freelook.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFreelook;
+                @Freelook.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFreelook;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -1062,6 +1088,9 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                 @KillPlayer.started += instance.OnKillPlayer;
                 @KillPlayer.performed += instance.OnKillPlayer;
                 @KillPlayer.canceled += instance.OnKillPlayer;
+                @Freelook.started += instance.OnFreelook;
+                @Freelook.performed += instance.OnFreelook;
+                @Freelook.canceled += instance.OnFreelook;
             }
         }
     }
@@ -1224,6 +1253,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
         void OnJump(InputAction.CallbackContext context);
         void OnSlide(InputAction.CallbackContext context);
         void OnKillPlayer(InputAction.CallbackContext context);
+        void OnFreelook(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {
