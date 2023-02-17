@@ -52,8 +52,16 @@ public class PlayerController : MonoBehaviour
             modelAnimator.SetFloat("GravityControl", gravityControl);
         }
     }
-    
+
     //Variables
+    [Header("Player Health")]
+
+    [Tooltip("The number of hits the player takes before dying")]
+    [SerializeField]
+    private int playerHitPoints = 1;
+
+    [Space(10)]
+
     [Header("Player Movement")]
 
     [Tooltip("The speed the player moves")]
@@ -61,7 +69,7 @@ public class PlayerController : MonoBehaviour
     private float moveSpeed;
 
     [Tooltip("The smoothness of player rotation, keep low")]
-    [SerializeField] [Range (0f, 1f)]
+    [SerializeField] [Range(0f, 1f)]
     private float smoothRotationTime = 0.1f;
 
     [Space(10)]
@@ -77,7 +85,7 @@ public class PlayerController : MonoBehaviour
     private float gravity;
 
     [Tooltip("The amount of jumps the player has")]
-    [Range (1, 5)]
+    [Range(1, 5)]
     public int jumpsAvailable = 2;
 
     [Tooltip("The Feet position, relevant for ground checks and jumping")]
@@ -96,10 +104,17 @@ public class PlayerController : MonoBehaviour
 
     [Header("Camera Variables")]
 
-    [Tooltip("Related to the camera aim")]
-    [Range(2, 100)] 
-    [SerializeField] 
-    private float cameraTargetDivider;
+    //[Tooltip("Related to the camera aim")]
+    //[Range(2, 100)] 
+    //[SerializeField] 
+    //private float cameraTargetDivider;
+    [Tooltip("How fast the player and the camera turn left and right")]
+    [SerializeField]
+    private float turningSpeedX = 0.3f;
+
+    [Tooltip("How fast the player and the camera turn up and down")]
+    [SerializeField]
+    private float turningSpeedY = 0.2f;
 
     [Space(10)]
 
@@ -114,7 +129,7 @@ public class PlayerController : MonoBehaviour
     private float dashDistance;
 
     [Tooltip("The time it takes after dashing to slow down")]
-    [SerializeField] [Range (1.5f, 5f)]
+    [SerializeField] [Range(1.5f, 5f)]
     private float dashSlowdown;
 
     [Tooltip("The slowest speed of a dash before stopping")]
@@ -154,8 +169,8 @@ public class PlayerController : MonoBehaviour
     public TextMeshProUGUI dashSecondsText;
 
     //privats
-    private NewInputSystemScript playerInputScript; 
-    
+    private NewInputSystemScript playerInputScript;
+
     //Vector3s
     private Vector3 moveDirection = Vector3.zero;
     private Vector3 verticalVelocity = Vector3.zero;
@@ -171,18 +186,20 @@ public class PlayerController : MonoBehaviour
 
     //Transforms
     private Transform mainCameraTransform;
-    private Transform cameraAimAt;
+    private Transform cameraPivot;
 
     //floats
     private float turnSmoothVelocity;
     private float momentum = 0f;
     private float moveValueForAnimator;
     private float jumpHeightValueForAnimator;
-    
+
+
     //ints
     private int originalNumberOfJumpsAvailable;
     private int dashSeconds;
-    
+    private int maxHP;
+
     //bools
     private bool grounded = true;
     private bool canDash = true;
@@ -199,6 +216,7 @@ public class PlayerController : MonoBehaviour
     private InputAction jump;
     private InputAction slide;
     private InputAction killPlayer;
+    private InputAction freelook;
 
 
     //Methods
@@ -225,6 +243,9 @@ public class PlayerController : MonoBehaviour
         killPlayer = playerInputScript.Player.KillPlayer;
         killPlayer.Enable();
         killPlayer.performed += KillPlayer;
+
+        freelook = playerInputScript.Player.Freelook;
+        freelook.Enable();
     }
 
     private void OnDisable()
@@ -232,20 +253,27 @@ public class PlayerController : MonoBehaviour
         move.Disable();
         look.Disable();
         dash.Disable();
-        jump.Disable(); 
+        jump.Disable();
         slide.Disable();
         killPlayer.Disable();
+        freelook.Disable();
     }
 
     private void Awake()
     {
         playerInputScript = new NewInputSystemScript();
+
         controller = GetComponent<CharacterController>();
+
         mainCameraTransform = GameObject.Find("Main Camera").transform;
         mainCamera = mainCameraTransform.gameObject.GetComponent<Camera>();
-        cameraAimAt = GameObject.Find("LookAtMe").transform;
+        cameraPivot = transform.Find("CameraFreelookPivot");
+
         animatorController = new AnimatorController(GameObject.Find("Animated Model").transform);
+
         checkpointManager = FindObjectOfType<CheckpointManager>();
+
+        maxHP = playerHitPoints;
     }
 
     private void Start()
@@ -258,10 +286,35 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        //Where does the camera look at?
-        var mousePosition = mainCamera.ScreenToWorldPoint(look.ReadValue<Vector2>());
-        var cameraPosition = (mousePosition + (cameraTargetDivider - 1) * transform.position) / cameraTargetDivider;
-        cameraAimAt.position = cameraPosition;
+        //Rotate the player based on mouse
+        if (freelook.inProgress && moveDirection.magnitude < 0.1f)
+        {
+            var lookX = look.ReadValue<Vector2>().x;
+            if (lookX > 0.1f || lookX < -0.1f)
+            {
+                cameraPivot.Rotate(0, lookX * turningSpeedX, 0);
+            }
+
+            var lookY = look.ReadValue<Vector2>().y;
+            if (lookY > 0.1f || lookY < -0.1f)
+            {
+                cameraPivot.Rotate(lookY * turningSpeedY, 0, 0);
+            }
+        }
+        else
+        {
+            //cameraPivot.localRotation = Quaternion.Euler(Vector3.zero);
+            cameraPivot.localRotation = Quaternion.Euler(
+                Mathf.Lerp(cameraPivot.localRotation.x, 0f, 0.04f), 
+                Mathf.Lerp(cameraPivot.localRotation.y, 0f, 0.04f),
+                Mathf.Lerp(cameraPivot.localRotation.z, 0f, 0.04f));
+            
+            var lookX = look.ReadValue<Vector2>().x;
+            if (lookX > 0.1f || lookX < -0.1f)
+            {
+                transform.Rotate(0, lookX * turningSpeedX, 0);
+            }
+        }
 
         JumpingAndGravity();
 
@@ -314,6 +367,16 @@ public class PlayerController : MonoBehaviour
         checkpointManager.RespawnPlayer();
     }
 
+    public void TakeDamage(int damage)
+    {
+        playerHitPoints -= damage;
+        if (playerHitPoints <= 0)
+        {
+            playerHitPoints = maxHP;
+            checkpointManager.RespawnPlayer();
+        }
+    }
+
     private void Dash(InputAction.CallbackContext context)
     {
         if (canDash)
@@ -327,7 +390,7 @@ public class PlayerController : MonoBehaviour
                 verticalVelocity = Vector3.zero;
 
                 StartCoroutine(DashCooldown());
-                Vector3 dashDirection = mainCameraTransform.forward;
+                Vector3 dashDirection = transform.forward;
                 dashDirection.y = 0f;
 
                 dashingVector = dashDirection.normalized * (dashDistance + momentum);
@@ -341,7 +404,7 @@ public class PlayerController : MonoBehaviour
                 verticalVelocity = Vector3.zero;
 
                 StartCoroutine(DashCooldown());
-                Vector3 dashDirection = mainCameraTransform.forward;
+                Vector3 dashDirection = transform.forward;
                 dashDirection.y = 0f;
 
                 dashingVector = dashDirection.normalized * dashDistance;
@@ -392,7 +455,6 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 stirDirection = new Vector3(move.ReadValue<Vector2>().x / 3f, 0f, 0f);
 
-        transform.forward = mainCamera.transform.forward;
         controller.Move((transform.forward + stirDirection).normalized * slidingSpeed * Time.deltaTime);
         momentum = Mathf.Lerp(0f, maximumSlideMomentum, ((transform.position - startSlidePos).magnitude) / slidingDistance);
         animatorController.RotateModel(new Vector3(-60f, 0f, 0f));
