@@ -1713,7 +1713,7 @@ GameObject:
   - component: {fileID: 2700532490312729238}
   - component: {fileID: 127050122938966126}
   m_Layer: 0
-  m_Name: MainChar_3_RIG_10
+  m_Name: Animated Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
