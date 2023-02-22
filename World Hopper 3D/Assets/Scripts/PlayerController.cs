@@ -13,6 +13,9 @@ public class PlayerController : MonoBehaviour
         Transform modelTransform;
         Animator modelAnimator;
 
+        
+        
+
         //Constructor
         public AnimatorController(Transform transform)
         {
@@ -21,36 +24,30 @@ public class PlayerController : MonoBehaviour
         }
 
         //Methods
+        public void ReadPlayerInput(Vector2 moveValue)
+        {
+            if (moveValue.magnitude <= 0.1f)
+            {
+                modelAnimator.SetBool("Start Running", false);
+                modelAnimator.SetBool("Go Idle", true);
+            }
+            else
+            {
+                modelAnimator.SetBool("Go Idle", false);
+                modelAnimator.SetBool("Start Running", true);
+            }
+        }
+
         public void RotateModel(Vector3 rotation)
         {
             modelTransform.localRotation = Quaternion.Euler(rotation);
         }
 
-        public void SetSpeed(float speed)
+        public void ToggleIdle(bool toggle)
         {
-            modelAnimator.SetFloat("Speed", speed);
+            modelAnimator.SetBool("Toggle Idle", toggle);
         }
 
-        public void SetDirection(float direction)
-        {
-            modelAnimator.SetFloat("Direction", direction);
-        }
-
-        public void SetJumpTrigger()
-        {
-            modelAnimator.SetTrigger("Jump");
-        }
-
-
-        public void SetJumpHeight(float jumpHeight)
-        {
-            modelAnimator.SetFloat("JumpHeight", jumpHeight);
-        }
-
-        public void SetGravityControl(float gravityControl)
-        {
-            modelAnimator.SetFloat("GravityControl", gravityControl);
-        }
     }
 
     //Variables
@@ -204,7 +201,6 @@ public class PlayerController : MonoBehaviour
     private bool grounded = true;
     private bool canDash = true;
     private bool dashing = false;
-    private bool jumpBoolForAnimator = false;
     private bool canSlide = true;
     private bool sliding = false;
     private bool canRefreshDash = false;
@@ -286,7 +282,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        //Rotate the player based on mouse
+        //Camera Rotate the player based on mouse
         if (freelook.inProgress && moveDirection.magnitude < 0.1f)
         {
             var lookX = look.ReadValue<Vector2>().x;
@@ -325,10 +321,9 @@ public class PlayerController : MonoBehaviour
         }
         else if (sliding) Sliding();
 
-        animatorController.SetSpeed(moveDirection.magnitude);
-
         if (dashing) Dashing();
 
+        #region UI Icons Temp
         //icon placeholders
         if (jumpsAvailable > 0)
         {
@@ -360,6 +355,11 @@ public class PlayerController : MonoBehaviour
         {
             slideImage.color = new Color(1f, 1f, 1f, 0.3f);
         }
+        #endregion
+
+        var moveValue = move.ReadValue<Vector2>();
+        
+        animatorController.ReadPlayerInput(moveValue);
     }
 
     private void KillPlayer(InputAction.CallbackContext context)
@@ -477,17 +477,13 @@ public class PlayerController : MonoBehaviour
                 verticalVelocity.y = jumpSpeed + momentum;
                 controller.Move(verticalVelocity * Time.deltaTime);
                 jumpsAvailable--;
-                jumpBoolForAnimator = true;
             }
             else
             {
                 verticalVelocity.y = jumpSpeed;
                 controller.Move(verticalVelocity * Time.deltaTime);
                 jumpsAvailable--;
-                jumpBoolForAnimator = true;
             }
-            
-            if (originalNumberOfJumpsAvailable - jumpsAvailable == 1) animatorController.SetJumpTrigger();
         }
     }
 
@@ -505,7 +501,6 @@ public class PlayerController : MonoBehaviour
                 dashSeconds = Mathf.RoundToInt(dashCooldown);
                 canDash = true;
             }
-            //jumpBoolForAnimator = false;
         }
         else
         {
