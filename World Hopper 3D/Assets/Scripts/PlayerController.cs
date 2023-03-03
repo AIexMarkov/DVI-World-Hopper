@@ -282,36 +282,6 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        //Camera Rotate the player based on mouse
-        if (freelook.inProgress && moveDirection.magnitude < 0.1f)
-        {
-            var lookX = look.ReadValue<Vector2>().x;
-            if (lookX > 0.1f || lookX < -0.1f)
-            {
-                cameraPivot.Rotate(0, lookX * turningSpeedX, 0);
-            }
-
-            var lookY = look.ReadValue<Vector2>().y;
-            if (lookY > 0.1f || lookY < -0.1f)
-            {
-                cameraPivot.Rotate(lookY * turningSpeedY, 0, 0);
-            }
-        }
-        else
-        {
-            //cameraPivot.localRotation = Quaternion.Euler(Vector3.zero);
-            cameraPivot.localRotation = Quaternion.Euler(
-                Mathf.Lerp(cameraPivot.localRotation.x, 0f, 0.04f), 
-                Mathf.Lerp(cameraPivot.localRotation.y, 0f, 0.04f),
-                Mathf.Lerp(cameraPivot.localRotation.z, 0f, 0.04f));
-            
-            var lookX = look.ReadValue<Vector2>().x;
-            if (lookX > 0.1f || lookX < -0.1f)
-            {
-                transform.Rotate(0, lookX * turningSpeedX, 0);
-            }
-        }
-
         JumpingAndGravity();
 
         if (!sliding)
@@ -425,7 +395,6 @@ public class PlayerController : MonoBehaviour
         if (dashTravelled.magnitude <= dashDistance + momentum)
         {
             controller.Move(dashingVector * dashSpeed * Time.deltaTime);
-            //dashingVector = Vector3.Lerp(dashingVector, Vector3.zero, dashSlowdown * Time.deltaTime);
         }
         else
         {
