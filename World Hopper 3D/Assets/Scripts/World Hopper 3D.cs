@@ -89,6 +89,15 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Zoom"",
+                    ""type"": ""Button"",
+                    ""id"": ""b0cbd721-1148-4507-8b85-1b94c166fadb"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -353,6 +362,17 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Freelook"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b934ef1f-3fe5-4330-9792-c1c96a3213d9"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Zoom"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -947,6 +967,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
         m_Player_Slide = m_Player.FindAction("Slide", throwIfNotFound: true);
         m_Player_KillPlayer = m_Player.FindAction("KillPlayer", throwIfNotFound: true);
         m_Player_Freelook = m_Player.FindAction("Freelook", throwIfNotFound: true);
+        m_Player_Zoom = m_Player.FindAction("Zoom", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1025,6 +1046,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
     private readonly InputAction m_Player_Slide;
     private readonly InputAction m_Player_KillPlayer;
     private readonly InputAction m_Player_Freelook;
+    private readonly InputAction m_Player_Zoom;
     public struct PlayerActions
     {
         private @NewInputSystemScript m_Wrapper;
@@ -1036,6 +1058,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
         public InputAction @Slide => m_Wrapper.m_Player_Slide;
         public InputAction @KillPlayer => m_Wrapper.m_Player_KillPlayer;
         public InputAction @Freelook => m_Wrapper.m_Player_Freelook;
+        public InputAction @Zoom => m_Wrapper.m_Player_Zoom;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1066,6 +1089,9 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                 @Freelook.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFreelook;
                 @Freelook.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFreelook;
                 @Freelook.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnFreelook;
+                @Zoom.started -= m_Wrapper.m_PlayerActionsCallbackInterface.OnZoom;
+                @Zoom.performed -= m_Wrapper.m_PlayerActionsCallbackInterface.OnZoom;
+                @Zoom.canceled -= m_Wrapper.m_PlayerActionsCallbackInterface.OnZoom;
             }
             m_Wrapper.m_PlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -1091,6 +1117,9 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
                 @Freelook.started += instance.OnFreelook;
                 @Freelook.performed += instance.OnFreelook;
                 @Freelook.canceled += instance.OnFreelook;
+                @Zoom.started += instance.OnZoom;
+                @Zoom.performed += instance.OnZoom;
+                @Zoom.canceled += instance.OnZoom;
             }
         }
     }
@@ -1254,6 +1283,7 @@ public partial class @NewInputSystemScript : IInputActionCollection2, IDisposabl
         void OnSlide(InputAction.CallbackContext context);
         void OnKillPlayer(InputAction.CallbackContext context);
         void OnFreelook(InputAction.CallbackContext context);
+        void OnZoom(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {
