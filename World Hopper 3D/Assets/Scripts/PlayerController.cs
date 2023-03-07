@@ -13,9 +13,6 @@ public class PlayerController : MonoBehaviour
         Transform modelTransform;
         Animator modelAnimator;
 
-        
-        
-
         //Constructor
         public AnimatorController(Transform transform)
         {
@@ -24,7 +21,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //Methods
-        public void ReadPlayerInput(Vector2 moveValue)
+        public void ReadPlayerGroundInput(Vector2 moveValue)
         {
             if (moveValue.magnitude <= 0.1f)
             {
@@ -38,16 +35,22 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        public void AnimateJump()
+        {
+            modelAnimator.SetTrigger("Jump");
+            modelAnimator.SetBool("Go Idle", false);
+            modelAnimator.SetBool("Start Running", false);
+        }
+
+        public void AnimateFall()
+        {
+            modelAnimator.SetTrigger("Fall");
+        }
+
         public void RotateModel(Vector3 rotation)
         {
             modelTransform.localRotation = Quaternion.Euler(rotation);
         }
-
-        public void ToggleIdle(bool toggle)
-        {
-            modelAnimator.SetBool("Toggle Idle", toggle);
-        }
-
     }
 
     //Variables
@@ -329,7 +332,18 @@ public class PlayerController : MonoBehaviour
 
         var moveValue = move.ReadValue<Vector2>();
         
-        animatorController.ReadPlayerInput(moveValue);
+        if(grounded) animatorController.ReadPlayerGroundInput(moveValue);
+        else
+        {
+            if (jump.ReadValue<float>() > 0.5f)
+            {
+                animatorController.AnimateJump();
+            }
+            else
+            {
+                //animatorController.AnimateFall();
+            }
+        }
     }
 
     private void KillPlayer(InputAction.CallbackContext context)
