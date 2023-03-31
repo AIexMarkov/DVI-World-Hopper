@@ -13,8 +13,7 @@ public class PlayerController : MonoBehaviour
         Transform modelTransform;
         Animator modelAnimator;
 
-        
-        
+        bool isInAir = false;
 
         //Constructor
         public AnimatorController(Transform transform)
@@ -24,7 +23,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //Methods
-        public void ReadPlayerInput(Vector2 moveValue)
+        public void ReadPlayerGroundInput(Vector2 moveValue)
         {
             if (moveValue.magnitude <= 0.1f)
             {
@@ -38,16 +37,33 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        public void AnimateJump()
+        {
+            modelAnimator.SetTrigger("Jump");
+            modelAnimator.SetBool("Go Idle", false);
+            modelAnimator.SetBool("Start Running", false);
+            isInAir = true;
+        }
+
+        public void AnimateFall()
+        {
+            modelAnimator.SetTrigger("Fall");
+        }
+
+        public void GroundedTrigger()
+        {
+            modelAnimator.SetTrigger("Grounded");
+            isInAir = false;
+        }
+
+        public bool IsInAir()
+        {
+            return isInAir;
+        }
         public void RotateModel(Vector3 rotation)
         {
             modelTransform.localRotation = Quaternion.Euler(rotation);
         }
-
-        public void ToggleIdle(bool toggle)
-        {
-            modelAnimator.SetBool("Toggle Idle", toggle);
-        }
-
     }
 
     //Variables
@@ -328,8 +344,12 @@ public class PlayerController : MonoBehaviour
         #endregion
 
         var moveValue = move.ReadValue<Vector2>();
-        
-        animatorController.ReadPlayerInput(moveValue);
+
+        if (grounded)
+        {
+            animatorController.ReadPlayerGroundInput(moveValue);
+            animatorController.GroundedTrigger();
+        }
     }
 
     private void KillPlayer(InputAction.CallbackContext context)
@@ -446,12 +466,16 @@ public class PlayerController : MonoBehaviour
                 verticalVelocity.y = jumpSpeed + momentum;
                 controller.Move(verticalVelocity * Time.deltaTime);
                 jumpsAvailable--;
+
+                animatorController.AnimateJump();
             }
             else
             {
                 verticalVelocity.y = jumpSpeed;
                 controller.Move(verticalVelocity * Time.deltaTime);
                 jumpsAvailable--;
+
+                animatorController.AnimateJump();
             }
         }
     }
@@ -459,6 +483,7 @@ public class PlayerController : MonoBehaviour
     private void JumpingAndGravity()
     {
         grounded = Physics.CheckSphere(feet.position, groundCheckRadius, groundLayer);
+        bool startedFalling = false;
 
         if (grounded && verticalVelocity.y < 0f)
         {
@@ -470,10 +495,18 @@ public class PlayerController : MonoBehaviour
                 dashSeconds = Mathf.RoundToInt(dashCooldown);
                 canDash = true;
             }
+
+            startedFalling = false;
         }
         else
         {
             verticalVelocity.y -= gravity * Time.deltaTime;
+
+            if (!startedFalling && !animatorController.IsInAir() && jumpsAvailable == originalNumberOfJumpsAvailable) 
+            { 
+                animatorController.AnimateFall();
+                startedFalling = true;
+            }
         }
         controller.Move(verticalVelocity * Time.deltaTime);
     }
