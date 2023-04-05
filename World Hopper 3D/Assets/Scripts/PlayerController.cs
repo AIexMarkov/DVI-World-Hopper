@@ -178,8 +178,10 @@ public class PlayerController : MonoBehaviour
     public Image jumpImage;
     public Image dashImage;
     public Image slideImage;
+    public Image hpImage;
     public TextMeshProUGUI jumpCountText;
     public TextMeshProUGUI dashSecondsText;
+    public TextMeshProUGUI hpText;
 
     //privats
     private NewInputSystemScript playerInputScript;
@@ -294,6 +296,9 @@ public class PlayerController : MonoBehaviour
         dashSeconds = Mathf.RoundToInt(dashCooldown);
 
         Cursor.visible = false;
+
+        hpImage.color = new Color(1f, 0.35f, 0.24f, playerHitPoints / maxHP);
+        hpText.text = playerHitPoints.ToString();
     }
 
     private void Update()
@@ -363,8 +368,12 @@ public class PlayerController : MonoBehaviour
         if (playerHitPoints <= 0)
         {
             playerHitPoints = maxHP;
-            checkpointManager.RespawnPlayer();
+            if(checkpointManager != null) checkpointManager.RespawnPlayer();
         }
+
+        float playersHpDivided = maxHP / playerHitPoints;
+        hpImage.color = new Color(1f, 0.35f, 0.24f, playersHpDivided);
+        hpText.text = playerHitPoints.ToString();
     }
 
     private void Dash(InputAction.CallbackContext context)
