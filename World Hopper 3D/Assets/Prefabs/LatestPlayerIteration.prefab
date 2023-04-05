@@ -2385,7 +2385,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03e30ad76c6bbf749a2887bdca9269ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerHitPoints: 1
+  playerHitPoints: 3
   moveSpeed: 8
   smoothRotationTime: 0.5
   jumpSpeed: 15
@@ -2410,8 +2410,10 @@ MonoBehaviour:
   jumpImage: {fileID: 0}
   dashImage: {fileID: 0}
   slideImage: {fileID: 0}
+  hpImage: {fileID: 0}
   jumpCountText: {fileID: 0}
   dashSecondsText: {fileID: 0}
+  hpText: {fileID: 0}
 --- !u!114 &3996234857317768286
 MonoBehaviour:
   m_ObjectHideFlags: 0
