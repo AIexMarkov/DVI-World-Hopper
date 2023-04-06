@@ -45,14 +45,14 @@ public class PlayerController : MonoBehaviour
             isInAir = true;
         }
 
-        public void AnimateFall()
+        public void AnimateFall(bool value)
         {
-            modelAnimator.SetTrigger("Fall");
+            modelAnimator.SetBool("Fall", value);
         }
 
-        public void GroundedTrigger()
+        public void GroundedTrigger(bool value)
         {
-            modelAnimator.SetTrigger("Grounded");
+            modelAnimator.SetBool("Grounded", value);
             isInAir = false;
         }
 
@@ -60,9 +60,21 @@ public class PlayerController : MonoBehaviour
         {
             return isInAir;
         }
-        public void RotateModel(Vector3 rotation)
+
+        public void DashAnim()
         {
-            modelTransform.localRotation = Quaternion.Euler(rotation);
+            modelAnimator.SetTrigger("Dash");
+        }
+
+        public void StartSliding()
+        {
+            modelAnimator.SetTrigger("Slide");
+            modelAnimator.SetBool("Sliding", true);
+        }
+
+        public void StopSliding()
+        {
+            modelAnimator.SetBool("Sliding", false);
         }
     }
 
@@ -353,7 +365,11 @@ public class PlayerController : MonoBehaviour
         if (grounded)
         {
             animatorController.ReadPlayerGroundInput(moveValue);
-            animatorController.GroundedTrigger();
+            animatorController.GroundedTrigger(true);
+        }
+        else
+        {
+            animatorController.GroundedTrigger(false);
         }
     }
 
@@ -383,7 +399,6 @@ public class PlayerController : MonoBehaviour
             if (sliding)
             {
                 sliding = false;
-                animatorController.RotateModel(new Vector3(0f, 0f, 0f));
                 canDash = false;
                 dashing = true;
                 verticalVelocity = Vector3.zero;
@@ -395,6 +410,9 @@ public class PlayerController : MonoBehaviour
                 dashingVector = dashDirection.normalized * (dashDistance + momentum);
                 dashingVector.y = 0f;
                 jumpsAvailable = originalNumberOfJumpsAvailable;
+
+                animatorController.DashAnim();
+                animatorController.StopSliding();
             }
             else
             {
@@ -409,6 +427,8 @@ public class PlayerController : MonoBehaviour
                 dashingVector = dashDirection.normalized * dashDistance;
                 dashingVector.y = 0f;
                 jumpsAvailable = originalNumberOfJumpsAvailable;
+
+                animatorController.DashAnim();
             }
 
             startDashPos = transform.position;
@@ -446,6 +466,8 @@ public class PlayerController : MonoBehaviour
             canSlide = false;
             StartCoroutine(SlideCooldown());
             startSlidePos = transform.position;
+
+            animatorController.StartSliding();
         }
     }
 
@@ -455,12 +477,11 @@ public class PlayerController : MonoBehaviour
 
         controller.Move((transform.forward + stirDirection).normalized * slidingSpeed * Time.deltaTime);
         momentum = Mathf.Lerp(0f, maximumSlideMomentum, ((transform.position - startSlidePos).magnitude) / slidingDistance);
-        animatorController.RotateModel(new Vector3(-60f, 0f, 0f));
 
         if ((transform.position - startSlidePos).magnitude >= slidingDistance)
         {
             sliding = false;
-            animatorController.RotateModel(new Vector3(0f, 0f, 0f));
+            animatorController.StopSliding();
         }
     }
 
@@ -471,12 +492,12 @@ public class PlayerController : MonoBehaviour
             if (sliding)
             {
                 sliding = false;
-                animatorController.RotateModel(new Vector3(0f, 0f, 0f));
                 verticalVelocity.y = jumpSpeed + momentum;
                 controller.Move(verticalVelocity * Time.deltaTime);
                 jumpsAvailable--;
 
                 animatorController.AnimateJump();
+                animatorController.StopSliding();
             }
             else
             {
@@ -492,7 +513,6 @@ public class PlayerController : MonoBehaviour
     private void JumpingAndGravity()
     {
         grounded = Physics.CheckSphere(feet.position, groundCheckRadius, groundLayer);
-        bool startedFalling = false;
 
         if (grounded && verticalVelocity.y < 0f)
         {
@@ -505,16 +525,15 @@ public class PlayerController : MonoBehaviour
                 canDash = true;
             }
 
-            startedFalling = false;
+            animatorController.AnimateFall(false);
         }
         else
         {
             verticalVelocity.y -= gravity * Time.deltaTime;
 
-            if (!startedFalling && !animatorController.IsInAir() && jumpsAvailable == originalNumberOfJumpsAvailable) 
+            if (!animatorController.IsInAir() && jumpsAvailable == originalNumberOfJumpsAvailable) 
             { 
-                animatorController.AnimateFall();
-                startedFalling = true;
+                animatorController.AnimateFall(true);
             }
         }
         controller.Move(verticalVelocity * Time.deltaTime);
