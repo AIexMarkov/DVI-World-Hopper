@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Markovic_Level_01.unity
-    guid: 6f24fe4c7ff1baa4ebb790a78eb0db56
+    path: Assets/Scenes/Main Menu.unity
+    guid: 97e163ee948f6124e86053f7d477d9c9
+  - enabled: 1
+    path: Assets/Scenes/Blockout1.unity
+    guid: 09eba31f607b7384dbfa5b029063ac8f
   m_configObjects: {}
