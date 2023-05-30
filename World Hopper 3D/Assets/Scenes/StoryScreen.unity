@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -181,8 +181,24 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Here you can write your story text, but the text is static and isn't animated.
-    You can make a placeholder animation if you want.
+  m_text: 'In the eastern ancient forest populated by spirits, there lies a Shrine
+    kept digelently by the Shrine Maidens of the Valley.
+
+
+    During their free
+    time two Maiden sisters of the order were playing hide n seek. The older wiser
+    sister, Miyuki, was looking for her younger less experienced sister, Kiyoko.
+
+
+    While
+    hiding from Miyuki, Kiyoko went too deep into the forest. Unfortunately a spirit
+    noticed her and just as Miyuki found her. he spirit kidnaps the younger sister,
+    taking her into the spirit world through one of the Arches.
+
+
+    Now it is up
+    to you, her the older sister, to follow the spirit and find her sister before
+    their stay in the spirit world becomes permanent'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -209,7 +225,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 116.4
+  m_fontSize: 44.6
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
